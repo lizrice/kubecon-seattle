@@ -1,0 +1,66 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: liz-admission
+  name: liz-admission
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: liz-admission
+      name: liz-admission
+    spec:
+      containers:
+        - name: liz-admission
+          image: lizrice/admission
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--tls-cert-file=/certs/cert.pem"
+            - "--tls-private-key-file=/certs/key.pem"
+          volumeMounts:
+            - readOnly: true
+              mountPath: /certs
+              name: admission-server
+      volumes:
+        - name: admission-server
+          secret:
+            secretName: liz-admission-certs
+            optional: false
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: liz-admission
+spec:
+  selector:
+    app: liz-admission
+  ports:
+  - name: https
+    protocol: TCP
+    port: 443
+    targetPort: 443
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: liz-admission-webhook
+webhooks:
+- name: liz-admission.default.svc
+  rules:
+  - apiGroups:
+    - "*"
+    apiVersions:
+    - "*"
+    operations:
+    - CREATE
+    resources:
+    - serviceaccounts
+  clientConfig:
+    service:
+      namespace: default
+      name: liz-admission
+      path: "/admission"
+    # Get caBundle from the CA info in the cluster-info configmap (kube-public namespace)
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN5RENDQWJDZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRFNE1USXdOekU1TXpBMU5sb1hEVEk0TVRJd05ERTVNekExTmxvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTWhkCjlBSTJCSjh2NFpwbVpXdVQ0dlBpdnIwcTV5YzEvcjhXQlNoYWhIZ2wrU2Q3T2R1RU80dzQ4RUViMUhGeXVYZUMKNFo4a2tFN1l4a2p2KzFTTlNpMVkraTNnVUNldlBDZElaUUZaWm03cUJlS3V5Y3NHN3N0TU11R2tzaEVDZmNOWAplOEx2R0J6OEJpV0thL2RDSGZrNE9NRzN2WEJGQ09GRHhlSWMyRldOMDZiWSt1a1dSU3FQb3d5MnQ0bmtXRy9rCmowak1yYkpXWlVNMWVBd2ZPRjdZTFN0Vmgyb2xXMXNaOFA0aTZpOW12ZTcrdEJMUDdoVVUySTVza015TEI1UVAKQXdSUDZRTEhCcnJ5SFJTOCtnMGQrNE5TeXRPaWdvRmE1aWVqbGt0RXZKcW5zcm5SdEhJcW95NFBWMHRsT1ZBNAp1NURQTktFU2FWc2ZWdGJpS2JVQ0F3RUFBYU1qTUNFd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFMQWpiUlJaMnFyQVNEbUVqMU8rTkc0RUF2QUwKbk1pWnFDTnRSa01sRXZQS0hPVE5QTWM3L0h4Y3p0a1VWeE5pbDZlUldOTVYyWThiWjNqZGNzODZtc1pXbzd2WApJUFltVG9TNEwzRmRTWmhRZGhHTDNyVTdZdWRVQk9Cd1VZeVlPWmRjeCs5bU1zMHVDOE42N2tPNXhicEJBQ2lkCmh1dy9NYkZnYktyeUNPT1MvdVhDT1dxNE5VeHU2ZERvYVVCYUQrNHl2Z0p5MWlkS1JHR0h0QmxyTWdMN1JnRTMKRVB5Y1lVNHpXM2ppT2xrRVNNZWNYYndOOHk3S2VpbEFlSjJzVHRDTnZlRjgySlorZ2p0TjJpKy9ST3kwU2JTawpsWlpKUTc1UGxNS1plc21PVlVOQjczYnBTczdWbm1XVGtRRGtpTGJnaUZxVzhNQ0xEQ1JneWpLWUxtVT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
