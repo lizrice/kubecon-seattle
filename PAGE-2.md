@@ -18,4 +18,4 @@ kubectl apply -f https://raw.githubusercontent.com/lizrice/kubecon-seattle/maste
 ```
 
 
-[Next](../PAGE-3.md)
+[Next](./PAGE-3.md)
