@@ -1,7 +1,20 @@
-## Admission control
+# Add admission control
 
-Validating webhook admission control should be enabled by default in 1.13
-Run webhook-certs.sh to generate the secret containing the certificates that the webhook server uses
+## Delete this-is-even-better
+
+```bash
+kubectl delete -f https://raw.githubusercontent.com/lizrice/kubecon-seattle/master/this-is-even-better.yaml
+```
+
+## Add the admission controller
+
+Validating webhook admission control should be enabled by default in 1.13.
+Run webhook-certs.sh to generate the secret containing the certificates that the webhook server uses.
+Run the admission controller
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/lizrice/kubecon-seattle/master/admission/admission.yaml
+```
 
 ## Opting out of service account tokens
 
