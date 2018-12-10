@@ -20,7 +20,7 @@ kubectl delete -f https://raw.githubusercontent.com/lizrice/kubecon-seattle/mast
 ## Service account version
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/lizrice/kubecon-seattle/master/this-is-even-better.yaml
+kubectl apply -f https://raw.githubusercontent.com/lizrice/kubecon-seattle/master/even-better.yaml
 ```
 
 [Next](./PAGE-3.md)
