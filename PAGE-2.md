@@ -10,7 +10,7 @@ curl -k -H "Authorization: Bearer $TOKEN" https://kubernetes.default/api/v1/name
 # We wouldn't have access to everything with the default service account
 ```
 
-### Delete this-is-fine
+## Delete this-is-fine
 
 ```bash
 kubectl delete -f https://raw.githubusercontent.com/lizrice/kubecon-seattle/master/this-is-fine.yaml

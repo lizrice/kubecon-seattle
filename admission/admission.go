@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -16,7 +14,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/client-go/rest"
 )
 
 var scheme = runtime.NewScheme()
@@ -52,17 +49,7 @@ func toAdmissionResponse(err error) *v1beta1.AdmissionResponse {
 	}
 }
 
-func admitRoot(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
-	fmt.Printf("resource: %v\n", ar.Request.Resource)
-	reviewResponse := v1beta1.AdmissionResponse{}
-	reviewResponse.Allowed = true
-	return &reviewResponse
-}
-
 func admission(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("============ handling a request")
-	fmt.Printf("%s\n", r.URL)
-
 	var body []byte
 	if r.Body != nil {
 		if data, err := ioutil.ReadAll(r.Body); err == nil {
@@ -85,8 +72,6 @@ func admission(w http.ResponseWriter, r *http.Request) {
 		switch ar.Request.Resource {
 		case serviceAccountResource:
 			reviewResponse = admitServiceAccount(ar)
-		case podResource:
-			reviewResponse = admitPod(ar)
 		default:
 			reviewResponse = admitRoot(ar)
 		}
@@ -108,63 +93,6 @@ func admission(w http.ResponseWriter, r *http.Request) {
 	if _, err := w.Write(resp); err != nil {
 		fmt.Printf("writing: %v\n", err)
 	}
-}
-
-func getTLSConfig() (*tls.Config, error) {
-	// get service account information
-	inClusterConfig, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get in-cluster config: %v", err)
-	}
-
-	// Get the CA file from the service account.
-	saCA, err := ioutil.ReadFile(inClusterConfig.TLSClientConfig.CAFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read %s: %v", inClusterConfig.TLSClientConfig.CAFile, err)
-	}
-
-	cp := x509.NewCertPool()
-	if !cp.AppendCertsFromPEM(saCA) {
-		return nil, fmt.Errorf("failed to append cert from serviceAccount CA file: %v", err)
-	}
-
-	// We will only trust requests with a certificate signed by this CA
-	t := &tls.Config{
-		ClientAuth: tls.RequireAndVerifyClientCert,
-		// TODO: raise an issue as the server should be able to authenticate itself to the admission controller
-		// ClientAuth:            tls.RequestClientCert,
-		ClientCAs:             cp,
-		VerifyPeerCertificate: CertificateChains,
-	}
-
-	return t, nil
-}
-
-// CertificateChains prints information about verified certificate chains
-func CertificateChains(rawCerts [][]byte, chains [][]*x509.Certificate) error {
-	if len(chains) > 0 {
-		fmt.Println("Verified certificate chain from peer:")
-
-		for _, v := range chains {
-			for i, cert := range v {
-				fmt.Printf("  Cert %d:\n", i)
-				fmt.Printf(CertificateInfo(cert))
-			}
-		}
-	}
-
-	return nil
-}
-
-// CertificateInfo returns a string describing the certificate
-func CertificateInfo(cert *x509.Certificate) string {
-	if cert.Subject.CommonName == cert.Issuer.CommonName {
-		return fmt.Sprintf("    Self-signed certificate %v\n", cert.Issuer.CommonName)
-	}
-
-	s := fmt.Sprintf("    Subject %v\n", cert.DNSNames)
-	s += fmt.Sprintf("    Issued by %s\n", cert.Issuer.CommonName)
-	return s
 }
 
 func main() {

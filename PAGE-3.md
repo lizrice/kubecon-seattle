@@ -13,7 +13,7 @@ kubectl apply -f https://raw.githubusercontent.com/lizrice/kubecon-seattle/maste
 ## Try applying this-is-fine again
 
 ```bash
-kubectl delete -f https://raw.githubusercontent.com/lizrice/kubecon-seattle/master/this-is-fine.yaml
+kubectl apply -f https://raw.githubusercontent.com/lizrice/kubecon-seattle/master/this-is-fine.yaml
 ```
 
 The service account creation isn't permitted.
@@ -42,3 +42,10 @@ spec:
   automountServiceAccountToken: false
 ```
 
+## Delete this-is-fine again
+
+```bash
+kubectl delete -f https://raw.githubusercontent.com/lizrice/kubecon-seattle/master/this-is-fine.yaml
+```
+
+[Next](./PAGE-4.md)
