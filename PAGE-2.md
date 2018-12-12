@@ -8,6 +8,12 @@ curl -k -H "Authorization: Bearer $TOKEN" https://kubernetes.default/api/v1/
 
 curl -k -H "Authorization: Bearer $TOKEN" https://kubernetes.default/api/v1/namespaces/default/pods
 # We wouldn't have access to everything with the default service account
+
+# Install kubectl
+curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+chmod +x kubectl
+kubectl get pods
+kubectl auth can-i create pods
 ```
 
 ## Delete this-is-fine
