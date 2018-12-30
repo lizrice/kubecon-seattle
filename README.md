@@ -1,5 +1,7 @@
 # Save yourselves
 
+This is the code for the demo in my keynote at [KubeCon + CloudNativeCon Seattle](https://youtu.be/McDzaTnUVWs). 
+
 Here's a really great idea: run this*.
 
 ```bash
